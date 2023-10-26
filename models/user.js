@@ -9,6 +9,14 @@ class User extends Sequelize.Model {
           allowNull: true,
           unique: true,
         },
+        profileImg: {
+          type: Sequelize.STRING(140),
+          allowNull: true,
+        },
+        name: {
+          type: Sequelize.STRING(15),
+          allowNull: true,
+        },
         nickname: {
           type: Sequelize.STRING(15),
           allowNull: false,
@@ -17,6 +25,7 @@ class User extends Sequelize.Model {
           type: Sequelize.STRING(100),
           allowNull: true,
         },
+
         provider: {
           type: Sequelize.ENUM("local", "kakao"),
           defaultValue: "local",
@@ -54,3 +63,11 @@ class User extends Sequelize.Model {
 }
 
 module.exports = User;
+
+/**
+ * 
+ *  profileImg: {
+          type: Sequelize.STRING(140),
+          allowNull: true,
+        },
+ */
