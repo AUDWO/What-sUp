@@ -26,7 +26,7 @@ class Diary extends Sequelize.Model {
           allowNull: false,
           defaultValue: false,
         },
-        likeCount: {
+        reactCount: {
           type: Sequelize.INTEGER,
           allowNull: false,
           defaultValue: 0,
@@ -52,6 +52,10 @@ class Diary extends Sequelize.Model {
   static associate(db) {
     db.Diary.belongsTo(db.User);
     db.Diary.hasMany(db.DiaryComment);
+    db.Diary.belongsToMany(db.User, {
+      foreignKey: "responseDiaryId",
+      through: "ContactDiary",
+    });
   }
 }
 
