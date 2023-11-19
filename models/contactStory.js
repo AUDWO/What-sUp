@@ -15,7 +15,7 @@ class ContactStory extends Sequelize.Model {
         underscored: false,
         modelName: "ContactStory",
         tableName: "contactStory",
-        paranoid: true,
+        paranoid: false,
         charset: "utf8",
         collate: "utf8_general_ci",
       }
