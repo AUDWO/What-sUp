@@ -52,6 +52,10 @@ class Story extends Sequelize.Model {
   static associate(db) {
     db.Story.belongsTo(db.User);
     db.Story.hasMany(db.StoryComment);
+    db.Story.belongsToMany(db.User, {
+      foreignKey: "responseStoryId",
+      through: "ContactStory",
+    });
   }
 }
 
