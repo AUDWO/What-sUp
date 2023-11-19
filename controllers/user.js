@@ -1,4 +1,6 @@
 const User = require("../models/user");
+const Post = require("../models/post");
+const Diary = require("../models/diary");
 
 exports.follow = async (req, res, next) => {
   try {
@@ -24,7 +26,6 @@ exports.unfollow = async (req, res, next) => {
     });
 
     if (user) {
-      // req.params.id에는 팔로잉을 취소하려는 사용자의 ID가 있어야 합니다.
       await user.removeFollowing(parseInt(req.params.id, 10));
       res.send("success");
     } else {
@@ -42,7 +43,6 @@ exports.findUserById = async (req, res, next) => {
       where: { id: req.params.id },
     });
     if (user) {
-      console.log("user입니다 user입니다 user입니다", user);
       res.send({ ...user.dataValues });
     } else {
       res.status(404).send("no user");
@@ -71,19 +71,10 @@ exports.checkFollower = async (req, res, next) => {
       ],
     });
 
-    const checkFollower = () => {
-      let check = false;
-      user.dataValues.Followers.forEach((userId) => {
-        if (userId === req.locals.user.id) {
-          check = true;
-        }
-      });
-
-      return check;
-    };
-
     if (user) {
-      res.send(user.dataValues);
+      res.send({
+        ...user.dataValues,
+      });
     } else {
       res.status(404).send("no user");
     }
