@@ -21,7 +21,7 @@ class PostComment extends Sequelize.Model {
       },
       {
         sequelize,
-        timestamps: false,
+        timestamp: false,
         paranoid: false,
         modelName: "PostComment",
         tableName: "postComments",
@@ -32,8 +32,12 @@ class PostComment extends Sequelize.Model {
   }
   static associate(db) {
     db.PostComment.belongsTo(db.User);
+    db.PostComment.belongsTo(db.Post);
     //hasMany는 원래 foreignKey(외래키)를 가지고 있다.
     db.PostComment.hasMany(db.PostComment);
+    db.PostComment.belongsToMany(db.User, {
+      through: "PostCommentLike",
+    });
   }
 }
 
