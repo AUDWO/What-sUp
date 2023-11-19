@@ -7,7 +7,9 @@ const Diary = require("../models/diary");
 const PostComment = require("../models/postComment");
 const StoryComment = require("../models/storyComment");
 const DiaryComment = require("../models/diaryComment");
-const { post } = require("../routes/user");
+const db = require("../models");
+const ContactStory = require("../models/contactStory");
+const ContactDiary = require("../models/contactDiary");
 
 exports.renderMain = async (req, res, next) => {
   const otherUserId = req.params.userId;
@@ -43,6 +45,7 @@ exports.renderMain = async (req, res, next) => {
 
     res.send({
       id: user.dataValues.id,
+      name: user.dataValues.name,
       img: user.dataValues.profileImg,
       createdAt: user.dataValues.createdAt,
       nickname: user.dataValues.nickname,
@@ -77,6 +80,7 @@ exports.renderMain = async (req, res, next) => {
 
       res.send({
         id: user.dataValues.id,
+        name: user.dataValues.name,
         img: user.dataValues.profileImg,
         createdAt: user.dataValues.createdAt,
         nickname: user.dataValues.nickname,
@@ -93,6 +97,44 @@ exports.renderMain = async (req, res, next) => {
   }
 };
 
+exports.checkUserEmail = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      where: {
+        email: req.params.email,
+      },
+    });
+
+    if (!user) {
+      res.send("allowEmail");
+    }
+    if (user) {
+      res.send("disallowEmail");
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+exports.checkUserNickname = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      where: {
+        nickname: req.params.nickname,
+      },
+    });
+
+    if (!user) {
+      res.send("allowNickname");
+    }
+    if (user) {
+      res.send("disallowNickname");
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 exports.renderPosts = async (req, res, next) => {
   const userId = req.params.userId;
 
@@ -106,6 +148,7 @@ exports.renderPosts = async (req, res, next) => {
           model: User,
           attributes: ["id", "nickname"],
         },
+        order: [["createdAt", "DESC"]],
       });
 
       res.send(posts);
@@ -123,6 +166,7 @@ exports.renderPosts = async (req, res, next) => {
           attributes: ["id", "nickname"],
         },
       });
+
       const onlyInfoPosts = posts.map((post) => post.dataValues);
 
       res.send(onlyInfoPosts);
@@ -136,11 +180,33 @@ exports.renderPosts = async (req, res, next) => {
 exports.renderOnlyPost = async (req, res, next) => {
   const postId = req.params.postId;
   try {
-    const post = await Post.findAll({
+    const post = await PostComment.findAll({
       where: { id: postId },
     });
 
     res.send(post);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+exports.renderOnlyPostInfo = async (req, res, next) => {
+  const postId = req.params.postId;
+  try {
+    const postComment = await PostComment.findAll({
+      where: { PostId: postId },
+    });
+
+    const post = await Post.findOne({
+      where: { id: postId },
+    });
+
+    const postLike = await post.getUsers({ attributes: ["id"] });
+
+    res.send({
+      commentCount: postComment,
+      postLikeCount: postLike,
+    });
   } catch (error) {
     console.error(error);
   }
@@ -152,7 +218,7 @@ exports.renderPostsComments = async (req, res, next) => {
       include: [
         {
           model: User,
-          attributes: ["id", "nickname"],
+          attributes: ["id", "nickname", "profileImg"],
         },
         {
           model: Post,
@@ -207,12 +273,29 @@ exports.renderOnlyComment = async (req, res, next) => {
   }
 };
 
+exports.renderOnlyPostCommentLikeInfo = async (req, res) => {
+  const commentId = req.params.commentId;
+  try {
+    const postComment = await PostComment.findOne({
+      where: { id: commentId },
+    });
+
+    const postCommentLike = await postComment.getUsers({ attributes: ["id"] });
+
+    res.send({
+      postCommentLikeCount: postCommentLike,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 exports.renderStory = async (req, res, next) => {
   try {
     const stories = await Story.findAll({
       include: {
         model: User,
-        attributes: ["id", "nickname"],
+        attributes: ["id", "nickname", "profileImg"],
       },
     });
 
@@ -282,6 +365,22 @@ exports.renderStoryReplyComments = async (req, res, next) => {
   }
 };
 
+exports.renderStoryReact = async (req, res) => {
+  try {
+    const storyReacts = await ContactStory.findAll({
+      where: {
+        responseStoryId: req.params.storyId,
+      },
+    });
+
+    const onlyInfoStoryReacts = storyReacts.map((react) => react.dataValues);
+
+    res.send(onlyInfoStoryReacts);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 exports.renderDiaries = async (req, res, next) => {
   const userId = req.params.userId;
   if (userId) {
@@ -292,8 +391,9 @@ exports.renderDiaries = async (req, res, next) => {
         },
         include: {
           model: User,
-          attributes: ["id", "nickname"],
+          attributes: ["id", "nickname", "profileImg"],
         },
+        order: [["createdAt", "DESC"]],
       });
 
       const onlyInfoDiaries = diaries.map((diary) => diary.dataValues);
@@ -308,7 +408,7 @@ exports.renderDiaries = async (req, res, next) => {
       const diaries = await Diary.findAll({
         include: {
           model: User,
-          attributes: ["id", "nickname"],
+          attributes: ["id", "nickname", "profileImg"],
         },
       });
 
@@ -374,6 +474,22 @@ exports.renderDiaryReplyComments = async (req, res, next) => {
     );
 
     res.send(onlyInfoDiaryReplyComments);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+exports.renderDiaryReact = async (req, res) => {
+  try {
+    const DiaryReacts = await ContactDiary.findAll({
+      where: {
+        responseDiaryId: req.params.diaryId,
+      },
+    });
+
+    const onlyInfoStoryReacts = DiaryReacts.map((react) => react.dataValues);
+
+    res.send(onlyInfoStoryReacts);
   } catch (error) {
     console.error(error);
   }
