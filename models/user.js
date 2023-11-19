@@ -49,6 +49,21 @@ class User extends Sequelize.Model {
   }
   static associate(db) {
     db.User.hasMany(db.Post);
+    db.User.belongsToMany(db.Story, {
+      foreignKey: "reacter",
+      through: "ContactStory",
+    });
+    db.User.belongsToMany(db.Diary, {
+      foreignKey: "reacter",
+      through: "ContactDiary",
+    });
+
+    db.User.belongsToMany(db.Post, {
+      through: "PostLike",
+    });
+    db.User.belongsToMany(db.PostComment, {
+      through: "PostCommentLike",
+    });
     db.User.belongsToMany(db.User, {
       foreignKey: "followingId",
       as: "Followers",
@@ -63,11 +78,3 @@ class User extends Sequelize.Model {
 }
 
 module.exports = User;
-
-/**
- * 
- *  profileImg: {
-          type: Sequelize.STRING(140),
-          allowNull: true,
-        },
- */
